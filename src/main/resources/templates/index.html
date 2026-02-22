@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>TEA TIME | Elite Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f1015;
+            --sidebar-bg: #090a0d;
+            --accent-blue: #00d2ff;
+            --accent-pink: #ff007a;
+            --glass: rgba(255, 255, 255, 0.05);
+            --neon-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+            --pink-shadow: 0 0 15px rgba(255, 0, 122, 0.4);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: white;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(255,255,255,0.05);
+            flex-shrink: 0;
+        }
+
+        .sidebar h2 { 
+            font-size: 1.8rem; 
+            font-weight: 800;
+            background: linear-gradient(to right, var(--accent-blue), var(--accent-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .nav-link {
+            padding: 14px 18px;
+            color: #888;
+            text-decoration: none;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-link:hover { 
+            color: white; 
+            background: var(--glass); 
+            transform: translateX(8px); 
+        }
+
+        .active { 
+            background: linear-gradient(45deg, #00d2ff, #3a7bd5) !important; 
+            color: white !important; 
+            box-shadow: var(--neon-shadow); 
+        }
+
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px 60px;
+            overflow-y: auto;
+            background: radial-gradient(circle at top right, rgba(0, 210, 255, 0.05), transparent);
+        }
+
+        /* Scrollbar Styling */
+        .main-content::-webkit-scrollbar { width: 6px; }
+        .main-content::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px;
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: border 0.3s;
+        }
+
+        .card:hover { border-color: rgba(0, 210, 255, 0.3); }
+
+        /* STATS GRID */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-box {
+            background: linear-gradient(145deg, #16181d, #1e2027);
+            padding: 25px;
+            border-radius: 24px;
+            border-left: 5px solid var(--accent-blue);
+            transition: all 0.3s ease;
+        }
+
+        .stat-box:hover { 
+            transform: translateY(-8px); 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .stat-box h4 { margin: 0; color: var(--accent-blue); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1.5px; }
+        .stat-box p { margin: 10px 0 0; font-size: 2rem; font-weight: 800; }
+
+        /* DUNGEON DESIGN */
+        .dungeon-card {
+            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://i.imgur.com/8Nf8x8A.jpg');
+            background-size: cover;
+            background-position: center;
+            border: 2px solid var(--accent-pink);
+            box-shadow: var(--pink-shadow);
+        }
+
+        .hp-bar {
+            width: 100%;
+            height: 14px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .hp-fill {
+            height: 100%;
+            width: 100%; /* Controlled by JS */
+            background: linear-gradient(to right, #ff007a, #ff4d4d);
+            box-shadow: 0 0 15px #ff007a;
+            transition: width 1.5s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+        }
+
+        /* BUTTONS */
+        .btn-action {
+            background: var(--accent-blue);
+            border: none;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: var(--neon-shadow);
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-action:hover {
+            transform: scale(1.05);
+            filter: brightness(1.2);
+            box-shadow: 0 0 25px rgba(0, 210, 255, 0.6);
+        }
+
+        /* TABLE CUSTOMS */
+        table { width: 100%; border-spacing: 0 10px; }
+        tr { background: rgba(255,255,255,0.02); transition: 0.2s; }
+        tr:hover { background: rgba(255,255,255,0.05); }
+        td { padding: 20px; border: none; }
+        td:first-child { border-radius: 15px 0 0 15px; }
+        td:last-child { border-radius: 0 15px 15px 0; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <h2>🍵 TEA TIME</h2>
+        <a href="/dashboard/main" class="nav-link" th:classappend="${view == 'main' or view == null ? 'active' : ''}">🏠 Dashboard</a>
+        <a href="/dashboard/leaderboard" class="nav-link" th:classappend="${view == 'leaderboard' ? 'active' : ''}">🏆 Leaderboard</a>
+        <a href="/dashboard/shop" class="nav-link" th:classappend="${view == 'shop' ? 'active' : ''}">🛒 Item Shop</a>
+        <a href="/dashboard/economy" class="nav-link" th:classappend="${view == 'economy' ? 'active' : ''}">💰 Economy</a>
+        <a href="/dashboard/inventory" class="nav-link" th:classappend="${view == 'inventory' ? 'active' : ''}">🎒 Inventory</a>
+        <a href="/dashboard/dungeons" class="nav-link" th:classappend="${view == 'dungeons' ? 'active' : ''}">⚔️ Dungeons</a>
+        
+        <div style="margin-top: auto; padding: 15px; background: var(--glass); border-radius: 15px; text-align: center;">
+            <div id="clock" style="font-weight: 800; font-size: 1.1rem; color: var(--accent-blue);">00:00:00</div>
+            <div style="font-size: 0.7rem; color: #555; text-transform: uppercase; margin-top: 5px;">Server Time</div>
+        </div>
+        <a href="/logout" class="nav-link" style="color: #ff4d4d; margin-top: 10px;">🚪 Logout</a>
+    </aside>
+
+    <main class="main-content">
+        
+        <div th:if="${view == 'main' or view == null}">
+            <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 10px;">Welcome, <span th:text="${name}" style="color: var(--accent-blue);">User</span>!</h1>
+            <p style="color: #666; margin-bottom: 40px;">Your Discord adventure continues here.</p>
+            
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <h4>Wallet Balance</h4>
+                    <p>🪙 <span th:text="${coins}">0</span></p>
+                </div>
+                <div class="stat-box" style="border-left-color: var(--accent-pink);">
+                    <h4>Dungeon Keys</h4>
+                    <p>🔑 3</p>
+                </div>
+                <div class="stat-box" style="border-left-color: #00ffaa;">
+                    <h4>Global Rank</h4>
+                    <p>#<span th:text="${rank != null ? rank : '??'}">12</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${view == 'leaderboard'}">
+            <h1 style="margin-bottom: 30px;">🏆 Global Rankings</h1>
+            <div class="card">
+                <table>
+                    <tr th:each="user, iter : ${topUsers}">
+                        <td style="font-weight: 800; color: var(--accent-blue); width: 60px;" th:text="'#' + ${iter.index + 1}">#1</td>
+                        <td th:text="${user.id}">DiscordID</td>
+                        <td style="text-align: right; color: #faa61a; font-weight: 800;">🪙 <span th:text="${user.coins}">0</span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div th:if="${view == 'shop'}">
+            <h1 style="margin-bottom: 30px;">🛒 The Tea Bazaar</h1>
+            <div th:if="${shopItems != null and !shopItems.empty}" class="stats-grid">
+                <div th:each="item : ${shopItems}" class="card" style="text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 15px;">📦</div>
+                    <h3 th:text="${item.name}" style="margin: 0;">Item Name</h3>
+                    <p th:text="${item.description}" style="color: #777; font-size: 0.85rem; min-height: 40px;">Description</p>
+                    <div style="font-size: 1.4rem; color: #faa61a; font-weight: 800; margin: 15px 0;">🪙 <span th:text="${item.price}">0</span></div>
+                    <button class="btn-action" style="width: 100%;">Purchase</button>
+                </div>
+            </div>
+            <div th:if="${shopItems == null or shopItems.empty}" class="card" style="text-align: center; padding: 80px; border: 2px dashed #222;">
+                <h2 style="color: #444;">The Bazaar is currently empty.</h2>
+            </div>
+        </div>
+
+        <div th:if="${view == 'dungeons'}">
+            <div class="card dungeon-card">
+                <h1 style="color: var(--accent-pink); text-transform: uppercase; font-weight: 800;">⚔️ Battle Phase</h1>
+                <div style="margin: 40px 0;">
+                    <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 0.9rem;">
+                        <span>HERO VITALITY</span>
+                        <span style="color: var(--accent-pink);">100%</span>
+                    </div>
+                    <div class="hp-bar"><div class="hp-fill" id="hp-main"></div></div>
+                </div>
+                <button class="btn-action" style="background: var(--accent-pink); width: 100%; box-shadow: var(--pink-shadow);">Unleash Special Move</button>
+            </div>
+        </div>
+
+        <div th:if="${view == 'inventory'}">
+            <h1 style="margin-bottom: 30px;">🎒 Your Elite Arsenal</h1>
+            <div class="card" style="text-align: center; padding: 80px; border: 2px dashed #222;">
+                <h2 style="color: #444;">Your inventory is empty.</h2>
+                <p style="color: #666;">Use `/work` in Discord to find items!</p>
+            </div>
+        </div>
+
+    </main>
+
+    <script th:inline="javascript">
+        // 1. HP Bar Animation
+        window.addEventListener('load', () => {
+            const hp = document.getElementById('hp-main');
+            if(hp) {
+                hp.style.width = '0%';
+                setTimeout(() => { hp.style.width = '100%'; }, 200);
+            }
+        });
+
+        // 2. Live Server Clock
+        function updateClock() {
+            const now = new Date();
+            const time = now.getHours().toString().padStart(2, '0') + ":" + 
+                         now.getMinutes().toString().padStart(2, '0') + ":" + 
+                         now.getSeconds().toString().padStart(2, '0');
+            document.getElementById('clock').innerText = time;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body>
+</html>
